@@ -1,0 +1,73 @@
+#vanunuraz@gmail.com
+#Makefile for Coup Game Project
+
+#Compiler and flags:
+#g++ is the C++ compiler
+#-std=c++20 use the C++20 standard
+#-Wall for warnings
+#-g for debug information for tools valgrind
+#-I for include directories for header files
+CXX= g++
+CXXFLAGS= -std=c++20 -Wall -g
+INCLUDES= -I. -IgameManagement -Iplayers -Itests -Igui
+
+#Source files by path
+SRC_MAIN= Main.cpp
+SRC_GUI= gui/coupSFML.cpp
+SRC_TEST= tests/test.cpp
+SRC_COMMON= gameManagement/Game.cpp players/Player.cpp\
+             players/Governor.cpp players/Spy.cpp players/Baron.cpp\
+             players/General.cpp players/Judge.cpp players/Merchant.cpp
+
+#Object files
+#The object files are created from the source files by replacing .cpp with .o
+OBJS_MAIN= $(SRC_MAIN:.cpp=.o)
+OBJS_GUI= $(SRC_GUI:.cpp=.o)
+OBJS_TEST= $(SRC_TEST:.cpp=.o)
+OBJS_COMMON= $(SRC_COMMON:.cpp=.o)
+
+#Executables
+MAIN_EXEC = main
+GUI_EXEC = gui_game
+TEST_EXEC = test_runner
+
+#Targets
+.PHONY: all Main GUI test valgrind clean #5 targets that are not files
+
+all: Main GUI test
+
+#Make shure the executables are built
+Main: $(MAIN_EXEC)
+	@echo "Running main.cpp..."
+	./$(MAIN_EXEC)
+
+GUI: $(GUI_EXEC)
+	@echo "Running GUI..."
+	./$(GUI_EXEC)
+
+test: $(TEST_EXEC)
+	@echo "Running tests..."
+	./$(TEST_EXEC)
+
+valgrind: $(TEST_EXEC)
+	@echo "Running Valgrind on tests..."
+	valgrind --leak-check=full --show-leak-kinds=all ./$(TEST_EXEC)
+
+#Now define how to build the executables from the object files if they are not
+#already built or if changed
+$(MAIN_EXEC): $(OBJS_MAIN) $(OBJS_COMMON)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^
+
+$(GUI_EXEC): $(OBJS_GUI) $(OBJS_COMMON)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ -lsfml-graphics -lsfml-window -lsfml-system
+
+$(TEST_EXEC): $(OBJS_TEST) $(OBJS_COMMON)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^
+
+#Rule to compile .cpp files to .o files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+#Clean target to remove object files and executables
+clean:
+	rm -f *.o */*.o $(MAIN_EXEC) $(GUI_EXEC) $(TEST_EXEC)
