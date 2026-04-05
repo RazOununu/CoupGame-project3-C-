@@ -10,9 +10,6 @@
 
 namespace coup{
     class Merchant: public Player{
-    private:
-        bool isArrested; //Flag indicating if the merchant was arrested
-
     public:
         //Constructor
         Merchant(Game &game, const std::string &name);
@@ -20,7 +17,7 @@ namespace coup{
         std::string role() const override;
         //Special abilities
         void whileLeast3(); //Get 1 coin if has at least 3 coins
-        void arrested(); //Called when Merchant is arrested, insted -1, -2 to the cash.
+        void onTurnStart() override;
     };
 }
 #endif

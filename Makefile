@@ -15,7 +15,7 @@ INCLUDES= -I. -IgameManagement -Iplayers -Itests -Igui
 SRC_MAIN= Main.cpp
 SRC_GUI= gui/coupSFML.cpp
 SRC_TEST= tests/test.cpp
-SRC_COMMON= gameManagement/Game.cpp players/Player.cpp\
+SRC_COMMON= gameManagement/Game.cpp gameManagement/PlayerFactory.cpp players/Player.cpp\
              players/Governor.cpp players/Spy.cpp players/Baron.cpp\
              players/General.cpp players/Judge.cpp players/Merchant.cpp
 
@@ -71,3 +71,4 @@ $(TEST_EXEC): $(OBJS_TEST) $(OBJS_COMMON)
 #Clean target to remove object files and executables
 clean:
 	rm -f *.o */*.o $(MAIN_EXEC) $(GUI_EXEC) $(TEST_EXEC)
+	

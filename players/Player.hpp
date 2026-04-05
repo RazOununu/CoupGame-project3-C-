@@ -10,18 +10,17 @@
 #define PLAYER_HPP
 #include <iostream>
 #include <string>
-using namespace std;
 
 namespace coup{
     class Game; //Forward declaration without including all this class implemention
     class Player{
     protected:
-        string name;
+        std::string name;
         Game& game;
         int coins;
         bool isAlive;
         bool underSanction; //Can't gather/tax
-        string lastArrested; //For the rule that not arrested the same player twice.
+        std::string lastArrested; //For the rule that not arrested the same player twice.
         bool isBlockedFromArrest; //According to lastArrested
 
     public:
@@ -30,12 +29,12 @@ namespace coup{
         //Currently empty, but allows extension later if needed
 
         //Getters
-        string getName() const;
+        std::string getName() const;
         bool getIsAlive() const;
         int getCoins() const;
         bool isUnderSanction() const;
         bool getBlockedFromArrest() const;
-        string getLastArrested() const;
+        std::string getLastArrested() const;
 
         //Setters
         void setIsAlive(bool alive);
@@ -51,8 +50,12 @@ namespace coup{
         virtual void sanction(Player& player); //Prevent another player from performing economic actions (gather, tax) until next turn, costs 3 coins.
         virtual void coup(Player& player); //Pay 7 coins to eliminate another player, must be used if player has 10 or more coins.
 
+        //Called by Game at the start of each player's turn.
+        //Allows role-specific passive behavior without requiring dynamic_cast in Game. Roles with turn-start effects should override this.
+        virtual void onTurnStart() {}
+
         //Abstract method
-        virtual string role() const = 0;
+        virtual std::string role() const = 0;
     };
 }
 

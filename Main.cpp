@@ -38,15 +38,22 @@ int main() {
         std::cout << name << std::endl;
     }
 
+    //Register players into the game in turn order
+    game_1.registerPlayer(&governor);
+    game_1.registerPlayer(&spy);
+    game_1.registerPlayer(&baron);
+    game_1.registerPlayer(&general);
+    game_1.registerPlayer(&judge);
+
     //Show whose turn at the beginning of the game
     std::cout << "First turn: " << game_1.getCurrentPlayer() << std::endl;
 
     //Each player performs a gather action
-    governor.gather();
-    spy.gather();
-    baron.gather();
-    general.gather();
-    judge.gather();
+    governor.gather(); game_1.nextTurn();
+    spy.gather();      game_1.nextTurn();
+    baron.gather();    game_1.nextTurn();
+    general.gather();  game_1.nextTurn();
+    judge.gather();    game_1.nextTurn();
 
     //Trying to play out of turn should raise an exception
     try {
@@ -56,12 +63,12 @@ int main() {
     }
 
     //Governor turns and chooses gather action
-    governor.gather();
+    governor.gather(); game_1.nextTurn();
 
     //Spy make tax in his turn
-    spy.tax();
+    spy.tax(); game_1.nextTurn();
 
-    //Judge tries to undo Governor’s action, not allowed by the rules
+    //Judge tries to undo Governor's action, not allowed by the rules (out-of-turn reaction, no nextTurn)
     try {
         judge.undoBribe(governor);
     } catch (const std::exception &e) {
@@ -72,44 +79,44 @@ int main() {
     std::cout << "Governor coins: " << governor.getCoins() << std::endl; //2
     std::cout << "Spy coins: " << spy.getCoins() << std::endl; //3
 
-    //Governor undoes Spy's tax, legal action for Governor
+    //Governor undoes Spy's tax, legal action for Governor (out-of-turn reaction, no nextTurn)
     governor.undoTax(spy);
     std::cout << "Spy coins after undo: " << spy.getCoins() << std::endl; //1
 
     //Baron taxes and get 2 coins, general and judge gather and get 1 coin
-    baron.tax();
-    general.gather();
-    judge.gather();
+    baron.tax();      game_1.nextTurn();
+    general.gather(); game_1.nextTurn();
+    judge.gather();   game_1.nextTurn();
 
     //Governor taxes and get 3 coins
-    governor.tax();
-    spy.gather();
+    governor.tax(); game_1.nextTurn();
+    spy.gather();   game_1.nextTurn();
 
     //Baron uses invest 3 and get 6 coins
-    baron.invest();
-    general.gather();
-    judge.gather();
+    baron.invest();   game_1.nextTurn();
+    general.gather(); game_1.nextTurn();
+    judge.gather();   game_1.nextTurn();
 
     //Display Baron's coins after invest
     std::cout << "Baron coins: " << baron.getCoins() << std::endl; // Expected: 6
 
     //Rounds of gathering and taxing
-    governor.tax();
-    spy.gather();
-    baron.gather(); //+1 and should now have 7 coins
-    general.gather();
-    judge.gather();
+    governor.tax();   game_1.nextTurn();
+    spy.gather();     game_1.nextTurn();
+    baron.gather();   game_1.nextTurn(); //+1 and should now have 7 coins
+    general.gather(); game_1.nextTurn();
+    judge.gather();   game_1.nextTurn();
 
-    governor.tax(); //Have 10 coins now
-    spy.gather();
+    governor.tax(); game_1.nextTurn(); //Have 10 coins now
+    spy.gather();   game_1.nextTurn();
 
     //Baron performs a coup against Governor costs 7 coins
     std::cout << "Baron coins before coup: " << baron.getCoins() << std::endl; // Expected: 7+
-    baron.coup(governor);
+    baron.coup(governor); game_1.nextTurn();
 
     //Gathers by General and Judge
-    general.gather();
-    judge.gather();
+    general.gather(); game_1.nextTurn();
+    judge.gather();   game_1.nextTurn();
 
     //Display players now in the game
     players = game_1.getPlayersNames();

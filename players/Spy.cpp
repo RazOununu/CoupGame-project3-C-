@@ -1,6 +1,7 @@
 //vanunuraz@gmail.com
 #include "Spy.hpp"
 #include "Player.hpp"
+using namespace std;
 
 namespace coup{
     Spy::Spy(Game &game, const string &name): Player(game, name)
@@ -27,9 +28,6 @@ namespace coup{
         }
         if(!player.getIsAlive()){
             throw runtime_error("The player is not in the game");
-        }
-        if(coins>= 10){
-            throw runtime_error("You must implement coup, you have 10 coins");
         }
         player.setBlockedFromArrest(true); //Mark the player as protected from arrest
     }

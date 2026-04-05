@@ -16,14 +16,14 @@ namespace coup{
             throw std::runtime_error("Governor is not alive");
         }
         if(coins>= 10){
-            throw std::runtime_error("Must perform coup with 10 or more coins");
+            throw std::runtime_error("You must perform a coup when you have 10 coins");
         }
         if(underSanction){
             underSanction= false;
             throw std::runtime_error("Governor is sanctioned and cannot use tax");
         }
-        coins+= 3;
-        game.addHistoryAction("tax", this, nullptr, 3); 
+        updateCoins(3);
+        game.addHistoryAction("tax", this, nullptr, 3);
     }
 
     //Attempt to undo a tax action performed by another player
@@ -39,26 +39,23 @@ namespace coup{
 
         //Retrieve the action history from the game
         const auto& history= game.getHistory();
-        bool found= false;
+        auto taxEntry= history.rend();
         //Iterate backward through the history to find the last action of the target player
         for(auto it= history.rbegin(); it!= history.rend(); ++it){
             if(it->playerBy== &player){
                 if(it->action== "tax"){
-                    found= true; //Found the last action and it was tax
-                    break;
+                    taxEntry= it; //Save iterator to read coins value later
                 }
-                else{ //Last action was not tax, cannot undo
-                    break;
-                }
+                break; //Stop after the last action of this player regardless
             }
         }
         // If tax was not the last action, throw an error
-        if(!found){
+        if(taxEntry== history.rend()){
             throw std::runtime_error("Cannot undo tax: last action was not tax");
         }
-        player.updateCoins(-2); //Reverse the effect of the tax  and andsubtract 2 coins from the player
-        game.addHistoryAction("undoTax", this, &player, -2); //Keep the undo action in the history
+        int taxAmount= taxEntry->coins; //Use the actual amount recorded in history
+        player.updateCoins(-taxAmount); //Reverse the exact coins that were gained
+        game.addHistoryAction("undoTax", this, &player, -taxAmount); //Keep the undo action in the history
     }
-
 
 }

@@ -10,15 +10,13 @@
 #include "Player.hpp"
 #include "Game.hpp"
 
-using namespace std;
-
 namespace coup{
     class Spy: public Player{
     public:
         //Constructor
-        Spy(Game &game, const string &name);
+        Spy(Game &game, const std::string &name);
         //Role identifier
-        string role() const override;
+        std::string role() const override;
         //Special abilities
         int watchCoins(Player &player); //Observe another player's coin count
         void blockArrest(Player &player); //Block arrest action for one turn

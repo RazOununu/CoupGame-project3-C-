@@ -25,10 +25,7 @@ namespace coup{
         if(coins< 5){
             throw std::runtime_error("Not enough coins to save from coup");
         }
-        if(player.getCoins()>= 10){
-            throw std::runtime_error("Player must coup instead of being revived");
-        }
-        coins-= 5;
+        updateCoins(-5);
         player.setIsAlive(true);
     }
 
@@ -38,7 +35,7 @@ namespace coup{
             throw std::runtime_error("General is not in the game");
         }
         if(isArrested){
-            coins+= 1;
+            updateCoins(1);
             isArrested= false;
         }
         else{

@@ -1,5 +1,6 @@
 //vanunuraz@gmail.com
 #include "Player.hpp"
+#include "Merchant.hpp"
 #include "Game.hpp"
 #include <iostream>
 #include <string>
@@ -72,10 +73,12 @@ namespace coup{
     void Player::gather(){
         if(!isAlive){
             throw runtime_error("Player is not alive");
-        }    
+        }
+        if(game.getCurrentPlayer() != name){
+            throw runtime_error("It is not your turn");
+        }
         if(coins>= 10){
-            std::cout<< "Warning: You must perform a coup when you have 10 coins"<< std::endl;
-            return;
+            throw runtime_error("You must perform a coup when you have 10 coins");
         }
         if(underSanction){
             underSanction = false;  //Sanction is cleared and action fails
@@ -89,7 +92,10 @@ namespace coup{
     void Player::tax(){
         if(!isAlive){
             throw runtime_error("Player is not alive");
-        }    
+        }
+        if(game.getCurrentPlayer() != name){
+            throw runtime_error("It is not your turn");
+        }
         if(coins>= 10){
             throw runtime_error("You must perform a coup when you have 10 coins");
         }    
@@ -105,7 +111,10 @@ namespace coup{
     void Player::bribe(){
         if(!isAlive){
             throw runtime_error("Player is not alive");
-        }    
+        }
+        if(game.getCurrentPlayer() != name){
+            throw runtime_error("It is not your turn");
+        }
         if(coins>= 10){
             throw runtime_error("You must perform a coup when you have 10 coins");
         }    
@@ -113,7 +122,7 @@ namespace coup{
             throw runtime_error("Not enough coins to bribe");
         }
         coins-= 4;
-        game.setSkipTurn(true); //Set flag to skip the next turn that not skipTurn 
+        game.setSkipTurn(true); //Set flag to skip the next turn that not skipTurn
         game.addHistoryAction("bribe", this, nullptr, 4);
     }
 
@@ -121,7 +130,10 @@ namespace coup{
     void Player::arrest(Player &target){
         if(!isAlive){
             throw runtime_error("Player is not alive");
-        }    
+        }
+        if(game.getCurrentPlayer() != name){
+            throw runtime_error("It is not your turn");
+        }
         if(!target.getIsAlive()){
             throw runtime_error("Target is not alive");
         }    
@@ -134,8 +146,14 @@ namespace coup{
         if(lastArrested== target.getName()) {
             throw runtime_error("You cannot arrest the same player in consecutive turns");
         }
-        coins+= 1;
-        target.coins-= 1;
+        // If a Merchant is targeted by arrest, they pay two coins to the bank
+        // instead of losing one coin to the attacking player.
+        if(dynamic_cast<Merchant*>(&target) != nullptr){
+            target.coins-= 2;
+        } else {
+            coins+= 1;
+            target.coins-= 1;
+        }
         lastArrested= target.getName(); //Update this member
         game.addHistoryAction("arrest", this, &target, 1);
     }
@@ -144,7 +162,10 @@ namespace coup{
     void Player::sanction(Player &target){
         if(!isAlive){
             throw runtime_error("Player is not alive");
-        }    
+        }
+        if(game.getCurrentPlayer() != name){
+            throw runtime_error("It is not your turn");
+        }
         if(!target.getIsAlive()){
             throw runtime_error("Target is not alive");
         }    
@@ -163,7 +184,10 @@ namespace coup{
     void Player::coup(Player &target){
         if(!isAlive){
             throw runtime_error("Player is not alive");
-        }    
+        }
+        if(game.getCurrentPlayer() != name){
+            throw runtime_error("It is not your turn");
+        }
         if(!target.getIsAlive()){
             throw runtime_error("Target is not alive");
         }    

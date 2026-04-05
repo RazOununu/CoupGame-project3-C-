@@ -1,15 +1,11 @@
 //vanunuraz@gmail.com
 #include "Game.hpp"
 #include "Player.hpp"
-#include "Governor.hpp"
-#include "Spy.hpp"
-#include "Baron.hpp"
-#include "General.hpp"
-#include "Judge.hpp"
-#include "Merchant.hpp"
+#include "PlayerFactory.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <vector>
+using namespace std;
 
 namespace coup{
     //Constructor of game board
@@ -21,9 +17,10 @@ namespace coup{
     }
 
     Game::~Game(){
-        for(Player* p: players){
+        for(Player* p: ownedPlayers){
             delete p;
         }
+        ownedPlayers.clear();
         players.clear();
         //History delete out from the scope
     }
@@ -44,28 +41,9 @@ namespace coup{
         if(isGameOver){
             throw runtime_error("Game is over, cannot add more players");
         }
-        //Used constructors of different players
-        if(role== "Governor"){
-            return new Governor(*this, name);
-        }
-        else if (role == "Spy"){
-            return new Spy(*this, name);
-        }
-        else if (role == "Baron"){
-            return new Baron(*this, name);
-        }
-        else if (role == "General"){
-            return new General(*this, name);
-        }
-        else if (role == "Judge"){
-            return new Judge(*this, name);
-        }
-        else if (role == "Merchant"){
-            return new Merchant(*this, name);
-        }
-        else{
-            throw runtime_error("Invalid role");
-        }
+        Player* p = coup::createPlayer(*this, name, role);
+        ownedPlayers.push_back(p); //Track heap ownership for cleanup in destructor
+        return p;
     }
 
     void Game::addPlayer(const vector<string> &playersNames){
@@ -135,15 +113,6 @@ namespace coup{
         if(currentPlayerPtr == nullptr){
             throw runtime_error("Current player not found");
         }
-        //Enforce rule: if player has 10+ coins, they must perform a coup
-        checkCoupRequired();
-        //If current player is a Merchant, apply their passive ability and if he with 3, get 1
-        Merchant* merchantPtr= dynamic_cast<Merchant*>(currentPlayerPtr);
-        if(merchantPtr!= nullptr){
-            merchantPtr->whileLeast3();
-        }
-        //Clear previous history actions made by the current player
-        clearPrevHistory(currentPlayerPtr);
         //Find the index of the current player in the players list
         size_t index= 0;
         for(size_t i= 0; i< players.size(); ++i) {
@@ -158,8 +127,14 @@ namespace coup{
         while(!players[nextIndex]->getIsAlive()){
             nextIndex= (nextIndex + 1)% players.size();
         }
+        //Clear the incoming player's history from their previous round.
+        //This closes the reaction window for that player's last action,
+        //as required: blocks remain possible until the acting player's next turn begins.
+        clearPrevHistory(players[nextIndex]);
         //Set the next player as the current player
         currentPlayer= players[nextIndex]->getName();
+        //Apply role-specific start-of-turn behavior (Merchant bonus)
+        players[nextIndex]->onTurnStart();
         // Print whose turn it is now
         cout<< "Next turn: "<< currentPlayer<< endl;
     }
@@ -211,8 +186,15 @@ namespace coup{
     }
 
     void Game::setCurrentPlayer(const string &name){
-    this->currentPlayer= name;
-}
+        this->currentPlayer= name;
+    }
+
+    void Game::registerPlayer(Player* player){
+        players.push_back(player);
+        if(players.size() == 1){
+            currentPlayer= player->getName();
+        }
+    }
 
     void Game::addHistoryAction(const string &action, Player *playerBy, Player *playerOn, int coins){
         HistoryAction h;
